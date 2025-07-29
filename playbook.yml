@@ -5,13 +5,13 @@
   become: yes
 
   vars:
-    scan_directory: "/home/paulo"
+    scan_directory: "/home/user" # Edite e coloque arqui os repositórios que pretende executar o scan
     exclude_directories:
-      - "/tmp"
+      - "/tmp" # Edite e coloque arqui os repositórios que pretende manter fora do scan
     exclude_files:
-      - "/etc/teste.txt"
-    s3_bucket: "clamav-relatorios"
-    sns_topic_arn: "arn:aws:sns:us-east-1:916498878990:send-clamav-relatorios"
+      - "/home/user/teste.txt" # Edite e coloque arqui os arquivos que pretende manter fora do scan
+    s3_bucket: "seu-bucket"
+    sns_topic_arn: "arn:aws:sns:<região>:<ID-da-conta>:<nome-do-topico>"
 
   tasks:
     - name: Instalar ClamAV
