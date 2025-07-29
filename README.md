@@ -1,11 +1,10 @@
 # ClamAV Scan Automático com Upload para AWS S3 e Notificação via SNS
 
-<div align="center">
-  <img src="img/arquitetura.jpeg" alt="Arquitetura" />
-</div>
+![Arquitetura](img/arquitetura.jpeg)
 
 
-Este projeto automatiza a verificação de vírus usando ClamAV, envia o relatório para um bucket AWS S3 e notifica via AWS SNS.
+
+Este projeto oferece uma solução automatizada para a verificação de vírus em servidores utilizando o ClamAV, um antivírus open-source amplamente reconhecido. Após realizar a varredura completa do sistema, o projeto gera um relatório detalhado dos arquivos escaneados e possíveis ameaças detectadas. Esse relatório é automaticamente enviado e armazenado em um bucket AWS S3, garantindo alta disponibilidade e segurança dos dados. Além disso, o sistema integra notificações via AWS SNS (Simple Notification Service), permitindo o envio instantâneo de alertas para equipes responsáveis, facilitando a resposta rápida a incidentes de segurança. Com essa automação, é possível melhorar significativamente a eficiência operacional e a proteção contra ameaças, minimizando riscos e otimizando a gestão da segurança em ambientes de TI.
 
 ---
 
