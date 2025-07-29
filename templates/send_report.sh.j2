@@ -1,0 +1,55 @@
+#!/bin/bash
+
+LOG_FILE="/var/log/clamav_scan_$(date +%F_%H-%M-%S).log"
+SCAN_DIR="{{ scan_directory }}"
+S3_BUCKET="{{ s3_bucket }}"
+SNS_TOPIC_ARN="{{ sns_topic_arn }}"
+
+# Monta parâmetros de exclusão de diretórios
+EXCLUDE_DIRS=""
+{% for dir in exclude_directories %}
+EXCLUDE_DIRS+=" --exclude-dir={{ dir }}"
+{% endfor %}
+
+# Monta parâmetros de exclusão de arquivos
+EXCLUDE_FILES=""
+{% for file_pattern in exclude_files %}
+EXCLUDE_FILES+=" --exclude={{ file_pattern }}"
+{% endfor %}
+
+# Executa o scan com exclusões
+/usr/bin/clamscan -r $EXCLUDE_DIRS $EXCLUDE_FILES "$SCAN_DIR" > "$LOG_FILE"
+
+# Verifica se há alguma ameaça no log (linha com "FOUND")
+if grep -q "FOUND" "$LOG_FILE"; then
+
+    # Envia o relatório para o S3
+    aws s3 cp "$LOG_FILE" "s3://$S3_BUCKET/"
+
+    if [ $? -eq 0 ]; then
+        # Captura o conteúdo do log (limitado a 256KB para SNS)
+        LOG_CONTENT=$(cat "$LOG_FILE")
+        LOG_SIZE=$(stat --printf="%s" "$LOG_FILE")
+
+        if [ "$LOG_SIZE" -le 250000 ]; then
+            # Envia o conteúdo do log por SNS
+            aws sns publish \
+                --topic-arn "$SNS_TOPIC_ARN" \
+                --subject "ClamAV Report $(date +%F)" \
+                --message "$LOG_CONTENT"
+        else
+            # Envia apenas um aviso com o link do arquivo no S3
+            aws sns publish \
+                --topic-arn "$SNS_TOPIC_ARN" \
+                --subject "ClamAV Report Uploaded (Large File)" \
+                --message "O relatório do ClamAV foi enviado para S3 e é muito grande para ser enviado no corpo do e-mail.\nLink: https://s3.console.aws.amazon.com/s3/object/$S3_BUCKET/$(basename $LOG_FILE)"
+        fi
+    else
+        echo "Falha ao enviar relatório para S3"
+    fi
+
+else
+    echo "Nenhuma ameaça encontrada. Nenhuma ação tomada."
+fi
+
+

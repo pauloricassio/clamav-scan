@@ -1,0 +1,44 @@
+---
+- name: ClamAV Scan + S3 Upload + SNS Notification
+  hosts: localhost
+  connection: local
+  become: yes
+
+  vars:
+    scan_directory: "/home/paulo"
+    exclude_directories:
+      - "/tmp"
+    exclude_files:
+      - "/etc/teste.txt"
+    s3_bucket: "clamav-relatorios"
+    sns_topic_arn: "arn:aws:sns:us-east-1:916498878990:send-clamav-relatorios"
+
+  tasks:
+    - name: Instalar ClamAV
+      apt:
+        name: clamav
+        state: present
+        update_cache: yes
+      tags: always
+
+    - name: Copiar script de scan e upload para S3
+      template:
+        src: send_report.sh.j2
+        dest: /usr/local/bin/clamav_s3_report.sh
+        mode: '0755'
+      tags: always
+
+    - name: Configurar cron job para rodar diariamente
+      cron:
+        name: "Daily ClamAV scan and report to S3"
+        job: "/usr/local/bin/clamav_s3_report.sh"
+        minute: "0"
+        hour: "3"
+      tags: always
+
+    - name: Rodar o ClamAV scan + Upload + SNS agora
+      command: /usr/local/bin/clamav_s3_report.sh
+      async: 1800
+      poll: 0  
+      tags: run-now
+
