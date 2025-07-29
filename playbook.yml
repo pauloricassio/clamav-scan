@@ -10,8 +10,8 @@
       - "/tmp" # Edite e coloque arqui os repositórios que pretende manter fora do scan
     exclude_files:
       - "/home/user/teste.txt" # Edite e coloque arqui os arquivos que pretende manter fora do scan
-    s3_bucket: "seu-bucket"
-    sns_topic_arn: "arn:aws:sns:<região>:<ID-da-conta>:<nome-do-topico>"
+    s3_bucket: "seu-bucket" # Coloque o nome do seu bucket S3
+    sns_topic_arn: "arn:aws:sns:<região>:<ID-da-conta>:<nome-do-topico>" # Coloque aqui a ARN do tópico SNS
 
   tasks:
     - name: Instalar ClamAV
